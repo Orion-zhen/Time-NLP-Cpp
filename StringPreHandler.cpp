@@ -16,11 +16,11 @@ string StringPreHandler::numberTranslator(string target)
 	* 此处需要实现x万x，x千x等的识别，在python版本中由先行断言(?:)实现
 	* 在c++中暂未找到实现方法
 	*/
+	sregex_iterator match;
 
 	regex pattern("[零一二两三四五六七八九]+");
-	smatch match;
-	if (regex_search(target, match, pattern))
-		target = regex_replace(target, pattern, to_string(wordToNumber(match.str())), regex_constants::format_first_only);
+	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
+		target = regex_replace(target, pattern, to_string(wordToNumber(match->str())), regex_constants::format_first_only);
 
 	/*
 	* 此处需要实现周x，星期x等的识别，在python版本中由先行断言(?<=)实现
@@ -28,35 +28,36 @@ string StringPreHandler::numberTranslator(string target)
 	*/
 
 	pattern = regex("0?([1-9])百+([0-9])?([0-9])?");
-	if (regex_search(target, match, pattern))
+
+	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
 	{
 		int num = 0;
-		num += stoi(match.str(1)) * 100;
-		num += (match.str(2).empty() ? 0 : stoi(match.str(2)) * 10);
-		num += (match.str(3).empty() ? 0 : stoi(match.str(3)));
+		num += stoi(match->str(1)) * 100;
+		num += (match->str(2).empty() ? 0 : stoi(match->str(2)) * 10);
+		num += (match->str(3).empty() ? 0 : stoi(match->str(3)));
 		target = regex_replace(target, pattern, to_string(num), regex_constants::format_first_only);
 	}
 
 	pattern = regex("0?([1-9])千+([0-9])?([0-9])?([0-9])?");
-	if (regex_search(target, match, pattern))
+	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
 	{
 		int num = 0;
-		num += stoi(match.str(1)) * 1000;
-		num += (match.str(2).empty() ? 0 : stoi(match.str(2)) * 100);
-		num += (match.str(3).empty() ? 0 : stoi(match.str(3)) * 10);
-		num += (match.str(4).empty() ? 0 : stoi(match.str(4)));
+		num += stoi(match->str(1)) * 1000;
+		num += (match->str(2).empty() ? 0 : stoi(match->str(2)) * 100);
+		num += (match->str(3).empty() ? 0 : stoi(match->str(3)) * 10);
+		num += (match->str(4).empty() ? 0 : stoi(match->str(4)));
 		target = regex_replace(target, pattern, to_string(num), regex_constants::format_first_only);
 	}
 
 	pattern = regex("([0-9])+万+([0-9])?([0-9])?([0-9])?([0-9])?");
-	if (regex_search(target, match, pattern))
+	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
 	{
 		int num = 0;
-		num += (match.str(1).empty() ? 0 : stoi(match.str(1)) * 10000);
-		num += (match.str(2).empty() ? 0 : stoi(match.str(2)) * 1000);
-		num += (match.str(3).empty() ? 0 : stoi(match.str(3)) * 100);
-		num += (match.str(4).empty() ? 0 : stoi(match.str(4)) * 10);
-		num += (match.str(5).empty() ? 0 : stoi(match.str(5)));
+		num += (match->str(1).empty() ? 0 : stoi(match->str(1)) * 10000);
+		num += (match->str(2).empty() ? 0 : stoi(match->str(2)) * 1000);
+		num += (match->str(3).empty() ? 0 : stoi(match->str(3)) * 100);
+		num += (match->str(4).empty() ? 0 : stoi(match->str(4)) * 10);
+		num += (match->str(5).empty() ? 0 : stoi(match->str(5)));
 		target = regex_replace(target, pattern, to_string(num), regex_constants::format_first_only);
 	}
 

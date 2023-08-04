@@ -2,17 +2,42 @@
 //
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include "json.h"
+
 #include <regex>
 #include <string>
 
 using namespace std;
 
+struct Date
+{
+	int month = 0;
+	int day = 0;
+};
+
 int main()
 {
-    regex pattern("([常]*)在");
-    smatch match;
-    string test = "在";
-    string tmp = "常";
-    if (regex_search(test, match, pattern))
-        cout << match.str(1).length() << endl;
+    string regexPath = "../resource/regex.txt";
+    string solarPath = "../resource/holi_solar.json";
+    string lunarPath = "../resource/holi_lunar.json";
+    ifstream fin;
+
+    fin.open(solarPath, ios::in);
+    if (!fin.is_open())
+    {
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
+    Json::CharReaderBuilder reader;
+    reader["emitUTF8"] = true;
+    Json::Value solarMap;
+    string strerr;
+    if (!Json::parseFromStream(reader, fin, &solarMap, &strerr))
+    {
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
+    cout << solarMap[0][1] << endl; 
 }

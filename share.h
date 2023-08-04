@@ -5,6 +5,7 @@
 #include <sstream>
 #include <regex>
 #include <ctime>
+#include "json.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -16,6 +17,7 @@
 using namespace std;
 using TimeFormat = vector<int>;
 enum TimeIndex {year, month, day, hour, minute, second};
+const sregex_iterator regexEnd;
 
 struct Date
 {
