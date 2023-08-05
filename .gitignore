@@ -33,3 +33,7 @@
 
 # CMakeCache
 build/
+
+# vscode&vs files
+.vs/
+.vscode/
