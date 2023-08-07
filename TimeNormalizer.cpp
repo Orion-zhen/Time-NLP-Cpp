@@ -82,6 +82,39 @@ void TimeNormalizer::init()
         cout << "Error opening file" << endl;
         exit(1);
     }
+
+    for (auto item : solarMap)
+    {
+        string holi = item[0].asString();
+        Date date;
+        date.month = item[1].asInt();
+        date.day = item[2].asInt();
+        holi_solar.emplace(holi, date);
+    }
+    fin.close();
+
+    fin.open(lunarPath, ios::in);
+    if (!fin.is_open())
+    {
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
+    Json::Value lunarMap;
+    if (!Json::parseFromStream(reader, fin, &lunarMap, &strerr))
+    {
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
+
+    for (auto item : lunarMap)
+    {
+        string holi = item[0].asString();
+        Date date;
+        date.month = item[1].asInt();
+        date.day = item[2].asInt();
+        holi_lunar.emplace(holi, date);
+    }
+    fin.close();
 }
 
 string TimeNormalizer::parse(string _target, TimeStamp _timeBase = TimeStamp())
@@ -95,4 +128,95 @@ string TimeNormalizer::parse(string _target, TimeStamp _timeBase = TimeStamp())
     oldTimeBase = timeBase;
     __preHandling();
     timeToken = __timeEx();
+
+    Json::Value dic;
+    if (timeToken.empty())
+    {
+        dic["error"] = "no time pattern could be extracted.";
+    }
+    else if (timeToken.size() == 1)
+    {
+        dic["type"] = "timestamp";
+        ostringstream os;
+        os << timeToken[0].Time.year << "-" << timeToken[0].Time.month << "-" << timeToken[0].Time.day << " " << timeToken[0].Time.hour << ":" << timeToken[0].Time.minute << ":" << timeToken[0].Time.second;
+        dic["timestamp"] = os.str();
+    }
+    else
+    {
+        dic["type"] = "timespan";
+        ostringstream os;
+        os << timeToken[0].Time.year << "-" << timeToken[0].Time.month << "-" << timeToken[0].Time.day << " " << timeToken[0].Time.hour << ":" << timeToken[0].Time.minute << ":" << timeToken[0].Time.second;
+        dic["timespan"].append(os.str());
+        os.str("");
+        os << timeToken[1].Time.year << "-" << timeToken[1].Time.month << "-" << timeToken[1].Time.day << " " << timeToken[1].Time.hour << ":" << timeToken[1].Time.minute << ":" << timeToken[1].Time.second;
+        dic["timespan"].append(os.str());
+    }
+
+    Json::StreamWriterBuilder writer;
+    writer["emitUTF8"] = true;
+    writer["indentation"] = "";
+
+    return Json::writeString(writer, dic);
+}
+
+void TimeNormalizer::__preHandling()
+{
+    StringPreHandler help;
+    target = help.delKeyword(target, "\\s+");
+    target = help.delKeyword(target, "[的]+");
+    target = help.numberTranslator(target);
+}
+
+vector<TimeUnit> TimeNormalizer::__timeEx()
+{
+    int startline = -1;
+    int endline = -1;
+    int rpointer = 0;
+    vector<string> tmp;
+
+    sregex_iterator match(target.begin(), target.end(), pattern);
+    for (; match != regexEnd; ++match)
+    {
+        startline = match->position();
+        if (startline == endline)
+        {
+            --rpointer;
+            tmp[rpointer] += match->str();
+        }
+        else
+        {
+            tmp.push_back(match->str());
+        }
+        endline = startline + match->length();
+        ++rpointer; 
+    }
+
+    vector<TimeUnit> res;
+    TimePoint contextTp;
+    cout << timeBase << endl;
+
+    for (size_t i = 0; i < size_t(rpointer); ++i)
+    {
+        res.push_back(TimeUnit(tmp[i], *this, contextTp));
+        contextTp = res[i].tp;
+    }
+
+    return __filterTimeUnit(res);
+}
+
+vector<TimeUnit> TimeNormalizer::__filterTimeUnit(vector<TimeUnit> tu_arr)
+{
+    if (tu_arr.size() < 1)
+    {
+        return tu_arr;
+    }
+    vector<TimeUnit> res;
+    for (auto elem : tu_arr)
+    {
+        if (elem.Time.formatTime != vector<int>{1970, 1, 1, 0, 0, 0})
+        {
+            res.push_back(elem);
+        }
+    }
+    return res;
 }
