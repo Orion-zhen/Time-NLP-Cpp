@@ -3,49 +3,53 @@
 
 using namespace std;
 
+static wstring_convert<codecvt_utf8<wchar_t>> converter;
+
 string TimeNormalizer::_filter(string input_query)
 {
     StringPreHandler help;
     input_query = help.numberTranslator(input_query);
 
-    string rule = "([0-9])月([0-9])";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(input_query, match, pattern))
+    wstring winput_query = converter.from_bytes(input_query);
+    wstring wrule = L"([0-9])月([0-9])";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(winput_query, wmatch, pattern))
     {
-        string rule1 = "日|号";
-        regex pattern1(rule1);
-        smatch match1;
-        size_t pos = match.str().find("月");
-        string tmp = match.str().substr(pos + 3);
-        if (!regex_search(tmp, match1, pattern1))
+        wstring wrule1 = L"日|号";
+        wregex pattern1(wrule1);
+        wsmatch wmatch1;
+        size_t pos = wmatch.str().find(L"月");
+        wstring tmp = wmatch.str().substr(pos + 3);
+        if (!regex_search(tmp, wmatch1, pattern1))
         {
-            string rule2 = "([0-9])月([0-9]+)";
-            regex pattern2(rule2);
-            smatch match2;
-            if (regex_search(input_query, match2, pattern2))
+            wstring wrule2 = L"([0-9])月([0-9]+)";
+            wregex pattern2(wrule2);
+            wsmatch wmatch2;
+            if (regex_search(winput_query, wmatch2, pattern2))
             {
-                string tmp = match2.str();
-                tmp = tmp.substr(0, tmp.find("月") + 3) + "号";
-                input_query = regex_replace(input_query, pattern2, tmp, regex_constants::format_first_only);
+                wstring tmp = wmatch2.str();
+                tmp = tmp.substr(0, tmp.find(L"月") + 3) + L"号";
+                winput_query = regex_replace(winput_query, pattern2, tmp, regex_constants::format_first_only);
             }
         }
     }
 
-    rule = "月";
-    pattern = regex(rule);
-    if (!regex_search(input_query, match, pattern))
+    wrule = L"月";
+    pattern = wregex(wrule);
+    if (!regex_search(winput_query, wmatch, pattern))
     {
-        input_query = regex_replace(input_query, regex("个"), "");
+        winput_query = regex_replace(winput_query, wregex(L"个"), L"");
     }
 
-    input_query = regex_replace(input_query, regex("中旬"), "15号");
-    input_query = regex_replace(input_query, regex("傍晚"), "午后");
-    input_query = regex_replace(input_query, regex("大年"), "");
-    input_query = regex_replace(input_query, regex("五一"), "劳动节");
-    input_query = regex_replace(input_query, regex("白天"), "早上");
-    input_query = regex_replace(input_query, regex("："), ":");
+    winput_query = regex_replace(winput_query, wregex(L"中旬"), L"15号");
+    winput_query = regex_replace(winput_query, wregex(L"傍晚"), L"午后");
+    winput_query = regex_replace(winput_query, wregex(L"大年"), L"");
+    winput_query = regex_replace(winput_query, wregex(L"五一"), L"劳动节");
+    winput_query = regex_replace(winput_query, wregex(L"白天"), L"早上");
+    winput_query = regex_replace(winput_query, wregex(L"："), L":");
 
+    input_query = converter.to_bytes(winput_query);
     return input_query;
 }
 
@@ -64,7 +68,10 @@ void TimeNormalizer::init()
     }
     string rule;
     fin >> rule;
-    pattern = regex(rule);
+    // debug sentence
+    cout << rule << endl;
+
+    pattern = wregex(converter.from_bytes(rule));
     fin.close();
 
     fin.open(solarPath, ios::in);
@@ -174,18 +181,19 @@ vector<TimeUnit> TimeNormalizer::__timeEx()
     int rpointer = 0;
     vector<string> tmp;
 
-    sregex_iterator match(target.begin(), target.end(), pattern);
+    wstring wtarget = converter.from_bytes(target);
+    wsregex_iterator match(wtarget.begin(), wtarget.end(), pattern);
     for (; match != regexEnd; ++match)
     {
         startline = match->position();
         if (startline == endline)
         {
             --rpointer;
-            tmp[rpointer] += match->str();
+            tmp[rpointer] += converter.to_bytes(match->str());
         }
         else
         {
-            tmp.push_back(match->str());
+            tmp.push_back(converter.to_bytes(match->str()));
         }
         endline = startline + match->length();
         ++rpointer; 

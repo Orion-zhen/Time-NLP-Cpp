@@ -1,13 +1,16 @@
 // -*- coding: utf-8 -*-
 #include "share.h"
 
-
 using namespace std;
+
+static wstring_convert<codecvt_utf8<wchar_t>> converter;
 
 string StringPreHandler::delKeyword(string target, string rules)
 {
-	regex pattern(rules);
-	return regex_replace(target, pattern, "");
+	wstring wrules = converter.from_bytes(rules);
+	wstring wtarget = converter.from_bytes(target);
+	wregex pattern(wrules);
+	return converter.to_bytes(regex_replace(wtarget, pattern, L""));
 }
 
 string StringPreHandler::numberTranslator(string target)
@@ -16,49 +19,53 @@ string StringPreHandler::numberTranslator(string target)
 	* 此处需要实现x万x，x千x等的识别，在python版本中由先行断言(?:)实现
 	* 在c++中暂未找到实现方法
 	*/
-	sregex_iterator match;
+	wsregex_iterator wmatch;
+	wstring wtarget = converter.from_bytes(target);
 
-	regex pattern("[零一二两三四五六七八九]+");
-	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
-		target = regex_replace(target, pattern, to_string(wordToNumber(match->str())), regex_constants::format_first_only);
-
+	wregex pattern(L"[零一二两三四五六七八九]+");
+	for (wmatch = wsregex_iterator(wtarget.begin(), wtarget.end(), pattern); wmatch != regexEnd; ++wmatch)
+		{
+			string tmp = converter.to_bytes(wmatch->str());
+			wtarget = regex_replace(wtarget, pattern, to_wstring(wordToNumber(tmp)), regex_constants::format_first_only);
+		}
+		
 	/*
 	* 此处需要实现周x，星期x等的识别，在python版本中由先行断言(?<=)实现
 	* 在c++中暂未找到实现方法
 	*/
 
-	pattern = regex("0?([1-9])百+([0-9])?([0-9])?");
+	pattern = wregex(L"0?([1-9])百+([0-9])?([0-9])?");
 
-	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
+	for (wmatch = wsregex_iterator(wtarget.begin(), wtarget.end(), pattern); wmatch != regexEnd; ++wmatch)
 	{
 		int num = 0;
-		num += stoi(match->str(1)) * 100;
-		num += (match->str(2).empty() ? 0 : stoi(match->str(2)) * 10);
-		num += (match->str(3).empty() ? 0 : stoi(match->str(3)));
-		target = regex_replace(target, pattern, to_string(num), regex_constants::format_first_only);
+		num += stoi(wmatch->str(1)) * 100;
+		num += (wmatch->str(2).empty() ? 0 : stoi(wmatch->str(2)) * 10);
+		num += (wmatch->str(3).empty() ? 0 : stoi(wmatch->str(3)));
+		wtarget = regex_replace(wtarget, pattern, to_wstring(num), regex_constants::format_first_only);
 	}
 
-	pattern = regex("0?([1-9])千+([0-9])?([0-9])?([0-9])?");
-	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
+	pattern = wregex(L"0?([1-9])千+([0-9])?([0-9])?([0-9])?");
+	for (wmatch = wsregex_iterator(wtarget.begin(), wtarget.end(), pattern); wmatch != regexEnd; ++wmatch)
 	{
 		int num = 0;
-		num += stoi(match->str(1)) * 1000;
-		num += (match->str(2).empty() ? 0 : stoi(match->str(2)) * 100);
-		num += (match->str(3).empty() ? 0 : stoi(match->str(3)) * 10);
-		num += (match->str(4).empty() ? 0 : stoi(match->str(4)));
-		target = regex_replace(target, pattern, to_string(num), regex_constants::format_first_only);
+		num += stoi(wmatch->str(1)) * 1000;
+		num += (wmatch->str(2).empty() ? 0 : stoi(wmatch->str(2)) * 100);
+		num += (wmatch->str(3).empty() ? 0 : stoi(wmatch->str(3)) * 10);
+		num += (wmatch->str(4).empty() ? 0 : stoi(wmatch->str(4)));
+		wtarget = regex_replace(wtarget, pattern, to_wstring(num), regex_constants::format_first_only);
 	}
 
-	pattern = regex("([0-9])+万+([0-9])?([0-9])?([0-9])?([0-9])?");
-	for (match = sregex_iterator(target.begin(), target.end(), pattern); match != regexEnd; ++match)
+	pattern = wregex(L"([0-9])+万+([0-9])?([0-9])?([0-9])?([0-9])?");
+	for (wmatch = wsregex_iterator(wtarget.begin(), wtarget.end(), pattern); wmatch != regexEnd; ++wmatch)
 	{
 		int num = 0;
-		num += (match->str(1).empty() ? 0 : stoi(match->str(1)) * 10000);
-		num += (match->str(2).empty() ? 0 : stoi(match->str(2)) * 1000);
-		num += (match->str(3).empty() ? 0 : stoi(match->str(3)) * 100);
-		num += (match->str(4).empty() ? 0 : stoi(match->str(4)) * 10);
-		num += (match->str(5).empty() ? 0 : stoi(match->str(5)));
-		target = regex_replace(target, pattern, to_string(num), regex_constants::format_first_only);
+		num += (wmatch->str(1).empty() ? 0 : stoi(wmatch->str(1)) * 10000);
+		num += (wmatch->str(2).empty() ? 0 : stoi(wmatch->str(2)) * 1000);
+		num += (wmatch->str(3).empty() ? 0 : stoi(wmatch->str(3)) * 100);
+		num += (wmatch->str(4).empty() ? 0 : stoi(wmatch->str(4)) * 10);
+		num += (wmatch->str(5).empty() ? 0 : stoi(wmatch->str(5)));
+		wtarget = regex_replace(wtarget, pattern, to_wstring(num), regex_constants::format_first_only);
 	}
 
 	return target;

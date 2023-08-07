@@ -3,6 +3,8 @@
 
 using namespace std;
 
+static wstring_convert<codecvt_utf8<wchar_t>> converter;
+
 void TimeUnit::time_normalization()
 {
     norm_setyear();
@@ -103,62 +105,67 @@ TimeStamp TimeUnit::genTime(const TimeFormat& tunit)
 
 void TimeUnit::norm_setyear()
 {
+    wstring wexp_time = converter.from_bytes(exp_time);
     // 此处有先向断言
-    string rule = "(\\d){1}年+";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wrule = L"(\\d){1}年+";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         normalizer.isTimeSpan = true;
-        tp.tunit[0] = stoi(match.str());
+        tp.tunit[0] = stoi(wmatch.str());
     }
 
-    rule = "(\\d){2}年+";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"(\\d){2}年+";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
-        tp.tunit[0] = stoi(match.str());
+        tp.tunit[0] = stoi(wmatch.str());
     }
 
     // 此处有先向断言
-    rule = "(\\d){3}年+";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"(\\d){3}年+";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         normalizer.isTimeSpan = true;
-        tp.tunit[0] = stoi(match.str());
+        tp.tunit[0] = stoi(wmatch.str());
     }
 
-    rule = "(\\d){4}年+";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"(\\d){4}年+";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
-        tp.tunit[0] = stoi(match.str());
+        tp.tunit[0] = stoi(wmatch.str());
     }
 }
 
 void TimeUnit::norm_setmonth()
 {
+    wstring wexp_time = converter.from_bytes(exp_time);
+    
     // 此处有先向断言
-    string rule = "(10|11|12|[1-9])月+";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wrule = L"(10|11|12|[1-9])月+";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
-        tp.tunit[1] = stoi(match.str());
+        tp.tunit[1] = stoi(wmatch.str());
         preferFuture(1);
     }
 }
 
 void TimeUnit::norm_setmonth_fuzzyday()
 {
-    string rule = "((10)|(11)|(12)|([1-9]))[月|\\.|\\-]([0-3][0-9]|[1-9])";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wexp_time = converter.from_bytes(exp_time);
+    
+    wstring wrule = L"((10)|(11)|(12)|([1-9]))[月|\\.|\\-]([0-3][0-9]|[1-9])";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
-        tp.tunit[1] = stoi(match.str(1));
-        tp.tunit[2] = stoi(match.str(2));
+        tp.tunit[1] = stoi(wmatch.str(1));
+        tp.tunit[2] = stoi(wmatch.str(2));
         preferFuture(1);
         _check_time(tp.tunit);
     }
@@ -166,14 +173,15 @@ void TimeUnit::norm_setmonth_fuzzyday()
 
 void TimeUnit::norm_setday()
 {
+    wstring wexp_time = converter.from_bytes(exp_time);
     
     // 此处有先向断言
-    string rule = "([0-3][0-9]|[1-9])[日|号]+";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wrule = L"([0-3][0-9]|[1-9])[日|号]+";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
-        tp.tunit[2] = stoi(match.str());
+        tp.tunit[2] = stoi(wmatch.str());
         preferFuture(2);
         _check_time(tp.tunit);
     }
@@ -190,10 +198,12 @@ void TimeUnit::norm_checkKeyword()
     * 3.晚上/傍晚/晚间/晚1-11点视为13-23点，12点视为0点
     * 4.0-11点pm/PM视为12-23点
     */
-    string rule = "凌晨";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wexp_time = converter.from_bytes(exp_time);
+    
+    wstring wrule = L"凌晨";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         isMorning = true;
         if (tp.tunit[3] == -1)
@@ -212,9 +222,9 @@ void TimeUnit::norm_checkKeyword()
         isAllDayTime = false;
     }
 
-    rule = "早上|早晨|早间|晨间|今早|明早|早|清晨";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"早上|早晨|早间|晨间|今早|明早|早|清晨";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         isMorning = true;
         if (tp.tunit[3] == -1)
@@ -233,9 +243,9 @@ void TimeUnit::norm_checkKeyword()
         isAllDayTime = false;
     }
 
-    rule = "上午";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"上午";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         isMorning = true;
         if (tp.tunit[3] == -1)
@@ -254,9 +264,9 @@ void TimeUnit::norm_checkKeyword()
         isAllDayTime = false;
     }
 
-    rule = "中午|午间|今午|明午|白天|AM|am";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"中午|午间|今午|明午|白天|AM|am";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         isMorning = false;
         if (tp.tunit[3] == -1)
@@ -275,9 +285,9 @@ void TimeUnit::norm_checkKeyword()
         isAllDayTime = false;
     }
 
-    rule = "下午|午后|pm|PM|今晚|明晚";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"下午|午后|pm|PM|今晚|明晚";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         isMorning = false;
         if (tp.tunit[3] == -1)
@@ -295,10 +305,10 @@ void TimeUnit::norm_checkKeyword()
         preferFuture(3);
         isAllDayTime = false;
     }
-    
-    rule = "晚上|夜间|夜里|今夜|明夜|晚|夜里|今晚";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+
+    wrule = L"晚上|夜间|夜里|今夜|明夜|晚|夜里|今晚";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         isMorning = false;
         if (tp.tunit[3] == -1)
@@ -320,13 +330,15 @@ void TimeUnit::norm_checkKeyword()
 
 void TimeUnit::norm_sethour()
 {
+    wstring wexp_time = converter.from_bytes(exp_time);
+    
     // 此处有先向断言
-    string rule = "([0-2]?[0-9])(点|时)";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wrule = L"([0-2]?[0-9])(点|时)";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
-        tp.tunit[3] = stoi(match.str(1));
+        tp.tunit[3] = stoi(wmatch.str(1));
         preferFuture(3);
         isAllDayTime = false;
     }
@@ -361,22 +373,24 @@ void TimeUnit::norm_setSpanRelated()
 
 void TimeUnit::norm_setHoliday()
 {
-    string rule = "(情人节)|(母亲节)|(青年节)|(教师节)|(中元节)|(端午)|(劳动节)|(7夕)|(建党节)|(建军节)|\
+    wstring wexp_time = converter.from_bytes(exp_time);
+    
+    wstring wrule = L"(情人节)|(母亲节)|(青年节)|(教师节)|(中元节)|(端午)|(劳动节)|(7夕)|(建党节)|(建军节)|\
     (初13)|(初14)|(初15)|(初12)|(初11)|(初9)|(初8)|(初7)|(初6)|(初5)|(初4)|(初3)|(初2)|(初1)|\
     (中和节)|(圣诞)|(中秋)|(春节)|(元宵)|(航海日)|(儿童节)|(国庆)|(植树节)|(元旦)|(重阳节)|(妇女节)|(记者节)|\
     (立春)|(雨水)|(惊蛰)|(春分)|(清明)|(谷雨)|\
     (立夏)|(小满 )|(芒种)|(夏至)|(小暑)|(大暑)|\
     (立秋)|(处暑)|(白露)|(秋分)|(寒露)|(霜降)|\
     (立冬)|(小雪)|(大雪)|(冬至)|(小寒)|(大寒)";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         if (tp.tunit[0] == -1)
         {
             tp.tunit[0] = normalizer.timeBase.year;
         }
-        string holi = match.str();
+        string holi = converter.to_bytes(wmatch.str());
 
         if (holi.find("节") != string::npos)
         {
@@ -408,86 +422,88 @@ void TimeUnit::norm_setCurRelated()
     TimeStamp cur = normalizer.timeBase;
     vector<bool> flag {false, false, false};
 
-    string rule = "前年";
-    regex pattern(rule);
-    smatch match;
-    if (regex_search(exp_time, match, pattern))
+    wstring wexp_time = converter.from_bytes(exp_time);
+    
+    wstring wrule = L"前年";
+    wregex pattern(wrule);
+    wsmatch wmatch;
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         cur.year -= 2;
         flag[0] = true;
     }
 
-    rule = "去年";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"去年";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         cur.year -= 1;
         flag[0] = true;
     }
 
-    rule = "今年";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"今年";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         flag[0] = true;
     }
 
-    rule = "明年";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"明年";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         cur.year += 1;
         flag[0] = true;
     }
 
-    rule = "后年";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"后年";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         cur.year += 2;
         flag[0] = true;
     }
 
-    rule = "([上]*)个?月";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"([上]*)个?月";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         // 一个中文string的长度为3
-        int month = match.str(1).length() / 3;
+        int month = wmatch.str(1).length() / 3;
         cur.month -= month;
         flag[1] = true;
     }
 
-    rule = "(本|这个)月";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"(本|这个)月";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         flag[1] = true;
     }
 
-    rule = "([下]*)个?月";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"([下]*)个?月";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         // 一个中文string的长度为3
-        int month = match.str(1).length() / 3;
+        int month = wmatch.str(1).length() / 3;
         cur.month += month;
         flag[1] = true;
     }
 
-    rule = "([大]*)前天";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"([大]*)前天";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         // 一个中文string的长度为3
-        int day = match.str(1).length() / 3 + 2;
+        int day = wmatch.str(1).length() / 3 + 2;
         cur.day -= day;
         flag[2] = true;
     }
 
-    rule = "昨天";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"昨天";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         cur.day -= 1;
         flag[2] = true;
@@ -498,12 +514,12 @@ void TimeUnit::norm_setCurRelated()
     * 今x，明x需要用到先向断言
     */
 
-    rule = "([大]*)后天";
-    pattern = regex(rule);
-    if (regex_search(exp_time, match, pattern))
+    wrule = L"([大]*)后天";
+    pattern = wregex(wrule);
+    if (regex_search(wexp_time, wmatch, pattern))
     {
         // 一个中文string的长度为3
-        int day = match.str(1).length() / 3 + 2;
+        int day = wmatch.str(1).length() / 3 + 2;
         cur.day += day;
         flag[2] = true;
     }

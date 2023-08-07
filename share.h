@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <locale>
+#include <codecvt>
 #include <ctime>
 #include "json.h"
 
@@ -17,7 +19,8 @@
 using namespace std;
 using TimeFormat = vector<int>;
 enum TimeIndex {year, month, day, hour, minute, second};
-const sregex_iterator regexEnd;
+const wsregex_iterator regexEnd;
+
 class TimeUnit;
 class TimeNormalizer;
 class LunarSolarConverter;
@@ -262,7 +265,7 @@ class TimeNormalizer
 {
 public:
 	bool isPreferFuture = true;
-	regex pattern;
+	wregex pattern;
 	unordered_map<string, Date> holi_solar;
 	unordered_map<string, Date> holi_lunar;
 	bool isTimeSpan = false;
