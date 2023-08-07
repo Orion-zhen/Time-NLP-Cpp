@@ -18,6 +18,12 @@ using namespace std;
 using TimeFormat = vector<int>;
 enum TimeIndex {year, month, day, hour, minute, second};
 const sregex_iterator regexEnd;
+class TimeUnit;
+class TimeNormalizer;
+class LunarSolarConverter;
+class TimePoint;
+class Lunar;
+class Solar;
 
 struct Date
 {
@@ -284,8 +290,8 @@ public:
 	void init();
 	void __preHandling();
 	vector<TimeUnit> __timeEx();
-	vector<TimeUnit> __filterTimeUnit();
-	string parse(string _target, TimeStamp _timeBase = TimeStamp());
+	vector<TimeUnit> __filterTimeUnit(vector<TimeUnit> tu_arr);
+	string parse(string _target, TimeStamp _timeBase);
 };
 
 class TimeUnit

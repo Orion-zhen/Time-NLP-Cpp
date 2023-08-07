@@ -117,7 +117,7 @@ void TimeNormalizer::init()
     fin.close();
 }
 
-string TimeNormalizer::parse(string _target, TimeStamp _timeBase = TimeStamp())
+string TimeNormalizer::parse(string _target, TimeStamp _timeBase)
 {
     isTimeSpan = false;
     invalidSpan = false;
@@ -193,7 +193,7 @@ vector<TimeUnit> TimeNormalizer::__timeEx()
 
     vector<TimeUnit> res;
     TimePoint contextTp;
-    cout << timeBase << endl;
+    // cout << timeBase << endl;
 
     for (size_t i = 0; i < size_t(rpointer); ++i)
     {
