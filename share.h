@@ -61,25 +61,6 @@ struct TimeStamp
 		second = formatTime[5];
 	};
 
-	TimeStamp operator() ()
-	{
-		TimeStamp now;
-		
-		time_t tmp = time(nullptr);
-		tm* current = gmtime(&tmp);
-
-		now.year = current->tm_year + 1900;
-		now.month = current->tm_mon + 1;
-		now.day = current->tm_mday;
-		now.wday = current->tm_wday;
-		now.hour = current->tm_hour;
-		now.minute = current->tm_min;
-		now.second = current->tm_sec;
-		now.formatTime = { now.year, now.month, now.day, now.hour, now.minute, now.second };
-
-		return now;
-	}
-
 	void rebuild()
 	{
 		year = formatTime[0];
@@ -272,17 +253,19 @@ public:
 	bool invalidSpan = false;
 	string timeSpan = "";
 	string target = "";
-	TimeStamp timeBase = TimeStamp();
+	TimeStamp timeBase;
 	TimeStamp nowTime = timeBase;
 	TimeStamp oldTimeBase = timeBase;
 	vector<TimeUnit> timeToken;
 
 	TimeNormalizer()
 	{
+		timeBase.getNow();
 		init();
 	};
 	TimeNormalizer(string _target)
 	{
+		timeBase.getNow();
 		init();
 		target = _filter(_target);
 		__preHandling();
@@ -308,13 +291,13 @@ public:
 	bool isFirstTimeSolveContext = true;
 	bool isMorning = false;
 	bool isAllDayTime = true;
-	TimeStamp Time = TimeStamp();
+	TimeStamp Time;
 	RangeTimeEnum timeRange;
 
-	TimeUnit() { if (!exp_time.empty()) time_normalization(); };
+	TimeUnit() { Time.getNow(); if (!exp_time.empty()) time_normalization(); };
 	TimeUnit(string _exp_time, TimeNormalizer _normalizer, TimePoint _contextTp) :
 		exp_time(_exp_time), normalizer(_normalizer), tp_origin(_contextTp)
-	{ if (!exp_time.empty()) time_normalization(); };
+	{ Time.getNow(); if (!exp_time.empty()) time_normalization(); };
 	~TimeUnit() {};
 
 	void time_normalization();

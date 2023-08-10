@@ -550,7 +550,8 @@ void TimeUnit::modifyTimeBase()
         // 此处将两位数的年份转换为四位数的年份
         // 原python代码仅仅是将小于30的年份转换为20xx
         // 此处优化为将小于当前年份的值转换为20xx，大于当前年份的值转换为19xx
-        TimeStamp nowTime = TimeStamp();
+        TimeStamp nowTime;
+        nowTime.getNow();
         if (tp.tunit[0] > (nowTime.year - 2000) && tp.tunit[0] < 100)
         {
             tp.tunit[0] += 1900;
@@ -588,7 +589,8 @@ TimeStamp TimeUnit::preferFutureWeek(int weekday, TimeStamp cur)
         }
     }
 
-    TimeStamp tmp = TimeStamp();
+    TimeStamp tmp;
+    tmp.getNow();
     if (tmp.wday > weekday)
     {
         tmp.day += 7;
@@ -614,7 +616,8 @@ void TimeUnit::preferFuture(size_t timeIndex)
     }
 
     TimeStamp time_arr = normalizer.timeBase;
-    TimeStamp cur = TimeStamp();
+    TimeStamp cur;
+    cur.getNow();
 
     int cur_unit = time_arr.formatTime[timeIndex];
 

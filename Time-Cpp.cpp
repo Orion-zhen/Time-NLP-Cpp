@@ -8,7 +8,8 @@ using namespace std;
 int main(void)
 {
     TimeNormalizer tn;
-    TimeStamp t = TimeStamp();
+    TimeStamp t;
+    t.getNow();
 
     string test = "晚上8点到上午10点之间";
     string res = tn.parse(test, t);

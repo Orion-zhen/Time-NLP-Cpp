@@ -60,21 +60,24 @@ void TimeNormalizer::init()
     string lunarPath = "../resource/holi_lunar.json";
     ifstream fin;
 
-    fin.open(regexPath, ios::in);
+    fin.open(regexPath, ios_base::in);
     if (!fin.is_open())
     {
         cout << "Error opening file" << endl;
         exit(1);
     }
-    string rule;
-    fin >> rule;
+    string rule = "([早上|晚上|上午])(\\d)+点";
+    // fin >> rule;
     // debug sentence
     cout << rule << endl;
 
     pattern = wregex(converter.from_bytes(rule));
     fin.close();
 
-    fin.open(solarPath, ios::in);
+    // debug sentence
+    cout << regex_match(L"早上8点", pattern) << endl;
+
+    fin.open(solarPath, ios_base::in);
     if (!fin.is_open())
     {
         cout << "Error opening file" << endl;
@@ -100,7 +103,7 @@ void TimeNormalizer::init()
     }
     fin.close();
 
-    fin.open(lunarPath, ios::in);
+    fin.open(lunarPath, ios_base::in);
     if (!fin.is_open())
     {
         cout << "Error opening file" << endl;
@@ -185,6 +188,9 @@ vector<TimeUnit> TimeNormalizer::__timeEx()
     wsregex_iterator match(wtarget.begin(), wtarget.end(), pattern);
     for (; match != regexEnd; ++match)
     {
+        // debug sentence
+        cout << converter.to_bytes(match->str()) << endl;
+        
         startline = match->position();
         if (startline == endline)
         {
